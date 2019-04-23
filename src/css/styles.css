@@ -1,12 +1,14 @@
 body {
   padding-top: 65px;
 }
+/*css for flexbox container*/
 .body {
   display: flex;
   flex-direction: row;
   flex-wrap: wrap;
   justify-content: space-around;
 }
+/**/
 .canvas-area {
   flex: 2;
   display: flex;
@@ -17,6 +19,7 @@ body {
 .img-canvas {
   border: 1px solid #000000;
 }
+/*flexbox container to put buttons and input into a row*/
 .input-area {
   flex: 1;
   display: flex;

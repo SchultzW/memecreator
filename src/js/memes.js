@@ -1,31 +1,34 @@
 import './general';
+class Memes 
+{
 
-class Memes {
-  constructor() {
+  constructor() 
+  {
+    //$ sign in variable name refers to variable with dom element
     console.log("Memes JS File");
-  }
-}
-new Memes();
-
-/*  
-Create a class called Memes
-- Part 1 - Setup the canvas and draw the default meme
-  - Initialize instance variables for all of the ui elements in the constructor
-      this.$topTextInput = 
-      this.$bottomTextInput = 
-      this.$imageInput = 
-      this.$downloadButton = 
-      this.$canvas = 
+    this.$topTextInput =  document.getElementById('topText'); //id topText
+    this.$bottomTextInput = document.getElementById('bottomText');    //id bottomText
+    this.$imageInput = document.getElementById('image');   //topick file id image
+    this.$downloadButton = document.getElementById('downloadMeme'); //id downloadMeme
+    this.$canvas = document.getElementById('imgCanvas');
       // these are not in the book
-      this.$defaultImage = document.querySelector('#defaultImage');
-      this.image = this.$defaultImage
-      this.$context = this.$canvas.getContext('2d');
-      this.deviceWidth = window.innerWidth;
-  - Write the method createCanvas
-    - set the width of the canvas to the minimum of 640 and deviceWidth - 30
-    - set the height of the canvas to the min of 480 and the deviceWidth
-    - add a call to this method in the constructor
-  - Write the method createMeme.  It should
+    this.$defaultImage = document.querySelector('#defaultImage'); 
+    this.image = this.$defaultImage
+    this.$context = this.$canvas.getContext('2d');//where we are drawing on the canvas
+    this.deviceWidth = window.innerWidth;
+    this.createCanvas();//dont need to bind becasue its being called in the constructor
+    this.createMeme=createMeme.bind(this);
+    
+  }
+  createCanvas()
+  {
+    this.$canvas.width=Math.min(640,this.deviceWidth-30);
+    this.$canvas.height=Math.min(480,this.deviceWidth)
+  }
+  createMeme()
+  {
+    /*
+    - Write the method createMeme.  It should
     - clear the previous image from the page
     - draw the image
       - initialize the height and width of the canvas to the height and width of the (default) image
@@ -46,6 +49,39 @@ Create a class called Memes
       - write them on the context 
       - don't forget to outline the text in black!
     - add a call to this method in the constructor
+    */
+
+    //we work with context variable not canvas variable
+    //clear image
+    this.$context.clearRect(0,0,this.$canvas.height,this.$canvas.width);
+    //draw image
+    this.$context.drawImage(image,0,0);
+    
+    //setup the text for drawing
+
+
+  }
+  addEventListeners()
+  {
+    let inputNodes=[this.$topTextInput,this.$bottomTextInput,this.$imageInput];
+    inputNodes.forEach(element=>element.addEventListener('keyup',this.createMeme));
+    inputNodes.forEach(element=>element.addEventListener('change',this.createMeme));
+  }
+
+
+
+
+
+
+
+}
+new Memes();
+
+/*  
+Create a class called Memes
+- Part 1 - Setup the canvas and draw the default meme
+  - Initialize instance variables for all of the ui elements in the constructor
+  
   END OF PART 1 - TEST AND DEBUG YOUR CODE - YOU SHOULD SEE THE MEME ON THE PAGE
 
 - PART 2 - Change the code as the user types
