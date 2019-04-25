@@ -1,5 +1,5 @@
 import './general';
-import { read } from 'fs';
+//import { read } from 'fs';
 class Memes 
 {
 
@@ -19,17 +19,22 @@ class Memes
     this.deviceWidth = window.innerWidth;
 
     this.createCanvas();//dont need to bind becasue its being called in the constructor
-    this.createMeme=createMeme.bind(this);
+    //this.createMeme=createMeme.bind(this);
     this.createMeme();
-    this.downloadMeme=downloadMeme.bind(this);
-    this.loadImage=loadImage.bind(this);
+    this.downloadMeme();
+    this.downloadMeme=this.downloadMeme.bind(this);
+    this.loadImage=this.loadImage.bind(this);
+    this.resize=this.resize.bind(this);
+    this.addEventListeners();
     
   }
   createCanvas()
   {
     this.$canvas.width=Math.min(640,this.deviceWidth-30);
     this.$canvas.height=Math.min(480,this.deviceWidth)
+    console.log('createCanvas');
   }
+  //renders the canvas
   createMeme()
   {
     
@@ -37,7 +42,8 @@ class Memes
     //clear image
     this.$context.clearRect(0,0,this.$canvas.height,this.$canvas.width);
     //draw image
-    this.$context.drawImage(image,0,0);
+    this.resize(this.$canvas.height,this.$canvas.width);
+    this.$context.drawImage(this.image,0,0);
    
     
     //setup the text for drawing
@@ -50,17 +56,14 @@ class Memes
     this.$context.fillStyle='white';
 
     //draw the text
-    const topText=$topTextInput.value.toUpperCase();
-    const botText=$bottomTextInput.value.toUpperCase();
-    this.$context.strokeText(botText,this.$canvas.width/2);
-    this.$canvas.height*(5/100);
-    this.$context.fillText(topText,this.$canvas.width/2);
-    this.$canvas.height*(5/100);
+    const topText=this.$topTextInput.value.toUpperCase();
+    const botText=this.$bottomTextInput.value.toUpperCase();
+    this.$context.strokeText(botText,this.$canvas.width/2,this.$canvas.height*(5/100));
+    this.$context.fillText(topText,this.$canvas.width/2,this.$canvas.height*(5/100));
 
-    this.$context.strokeText(botText,this.$canvas.width/2);
-    this.$canvas.height*(90/100);
-    this.$context.fillText(botText,this.$canvas.width/2);
-    this.$canvas.height*(90/100);
+    this.$context.strokeText(botText,this.$canvas.width/2,this.$canvas.height*(90/100));
+    this.$context.fillText(botText,this.$canvas.width/2,this.$canvas.height*(90/100));
+    console.log('createMeme');
     /*
     - Write the method createMeme.  It should
     - clear the previous image from the page
@@ -98,10 +101,13 @@ class Memes
       and then use the arrayName.forEach method and an arrow function
       Add a call to this method in the constructor
     */
-    let inputNodes=[this.$topTextInput,this.$bottomTextInput,this.$imageInput];
-    inputNodes.forEach(element=>element.addEventListener('keyup',this.createMeme));
-    inputNodes.forEach(element=>element.addEventListener('change',this.createMeme));
-    this.$downloadButton.addEventListener('click',this.$downloadButton.setAttributeNode(att));
+    //let inputNodes=[this.$topTextInput,this.$bottomTextInput,this.$imageInput];
+    //inputNodes.forEach(element=>element.addEventListener('keyup',this.createMeme));
+   //inputNodes.forEach(element=>element.addEventListener('change',this.createMeme));
+    this.$topTextInput.addEventListener('keyup',this.createMeme);
+    this.$bottomTextInput.addEventListener('keyup',this.createMeme);
+    //this.$downloadButton.addEventListener('click',this.$downloadButton.setAttributeNode(att));
+    this.$imageInput.addEventListener('change',this.loadImage);   
   }
   downloadMeme()
   {
@@ -135,6 +141,7 @@ class Memes
    let att=document.createAttribute('href');
    att.value=imageSource.replace(/^data:image\/{^;}/,'data:application/octec-stream');
    this.$downloadButton.setAttribute(att);
+   this.$downloadButton.addEventListener('click',this.$downloadButton.setAttributeNode(att));
 
    
   }
@@ -161,28 +168,57 @@ class Memes
         let reader=new FileReader();
         reader.onload=()=>
         {
-          let image = new Image();
-          image.onload=()=>
+          //let image = new Image();
+          this.image.onload=()=>
           {
               this.$canvas.height=image.height;
               this.$canvas.width=image.width;
               this.createMeme();
           };
-          image.src=reader.result;
+          this.image.src=reader.result;
         };
         reader.readAsDataURL(this.$imageInput.files[0]);
 
       }
   }
 
-
+  resize(canvasHeight,canvasWidth)
+  {
+    let height=canvasHeight;
+    let width=canvasWidth;
+    while(height>Math.min(1000,this.deviceWidth-30)&&width>Math.min(1000,this.deviceWidth-30))
+    {
+      height/=2;
+      width/=2;
+    }
+      this.$canvas.style.height = `${height}px`;
+      this.$canvas.style.width = `${width}px`;
+    
+    /*
+      - Part 5 - Resize the image if the user picks a really big image
+     - Write the method resizeImage
+        resizeCanvas(canvasHeight, canvasWidth) {
+        let height = canvasHeight;
+        let width = canvasWidth;
+        while(height > Math.min(1000, this.deviceWidth-30) && width > Math.min(1000, this.deviceWidth-30)) {
+          height /= 2;
+          width /= 2;
+      
+      this.$canvas.style.height = `${height}px`;
+      this.$canvas.style.width = `${width}px`;
+    
+  - Change the method addEventListener
+    - bind the class to the resizeImage method
+    - call resizeCanvas in createMeme just before you draw the image
+    */
+  }
 
 
 
 
 }
-new Memes();
-const myMemes;
+//new Memes();
+let myMemes;
 window.onload=()=>{myMemes=new Memes();};
 
 /*  
@@ -191,35 +227,7 @@ Create a class called Memes
   - Initialize instance variables for all of the ui elements in the constructor
   
 
-- PART 4 - Choose an image
-  - Write the method loadImage
-    - if there's something in the file input on the page
-      - declare and instantiate a FileReader object
-      - set it's onload hander to an anonymous function that
-        - set the image instance variable to a new image
-        - set it's onload handler to an anonymou function that
-          - calls the createMeme method
-        - set the src property of the image to the result from reading the file
-      - read the file
-  - Change the addEventListeners
-    - bind the class to the loadImage method
-    - add an event handler to the change event for the file input element on the page
-END OF PART 4 - TEST AND DEBUG YOUR CODE - YOU SHOULD BE ABLE TO PICK AN IMAGE FOR THE MEME
 
-- Part 5 - Resize the image if the user picks a really big image
-  - Write the method resizeImage
-    resizeCanvas(canvasHeight, canvasWidth) {
-      let height = canvasHeight;
-      let width = canvasWidth;
-      while(height > Math.min(1000, this.deviceWidth-30) && width > Math.min(1000, this.deviceWidth-30)) {
-        height /= 2;
-        width /= 2;
-      }
-      this.$canvas.style.height = `${height}px`;
-      this.$canvas.style.width = `${width}px`;
-    }
-  - Change the method addEventListener
-    - bind the class to the resizeImage method
-    - call resizeCanvas in createMeme just before you draw the image
+
 END OF PART 5 - TEST AND DEBUG YOUR CODE - YOU SHOULD BE ABLE TO PICK A REALLY LARGE IMAGE
 */
