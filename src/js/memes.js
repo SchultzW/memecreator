@@ -14,7 +14,7 @@ class Memes
     this.$canvas = document.getElementById('imgCanvas');
       // these are not in the book
     this.$defaultImage = document.querySelector('#defaultImage'); 
-    this.image = this.$defaultImage
+    this.image = this.$defaultImage;
     this.$context = this.$canvas.getContext('2d');//where we are drawing on the canvas
     this.deviceWidth = window.innerWidth;
 
@@ -31,8 +31,8 @@ class Memes
   createCanvas()
   {
     this.$canvas.width=Math.min(640,this.deviceWidth-30);
-    this.$canvas.height=Math.min(480,this.deviceWidth)
-    console.log('createCanvas');
+    this.$canvas.height=Math.min(480,this.deviceWidth-30);
+    
   }
   //renders the canvas
   createMeme()
@@ -40,13 +40,17 @@ class Memes
     
     //we work with context variable not canvas variable
     //clear image
-    this.$context.clearRect(0,0,this.$canvas.height,this.$canvas.width);
+    this.$context.clearRect(0,0,this.$canvas.width,this.$canvas.height);
     //draw image
     this.resize(this.$canvas.height,this.$canvas.width);
-    this.$context.drawImage(this.image,0,0);
-   
+    //this.$context.drawImage(this.image,0,0);
+
+    //https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/drawImage
+    //void ctx.drawImage(image, sx, sy, sWidth, sHeight, dx, dy, dWidth, dHeight);
+    this.$context.drawImage(this.image,0,0,this.image.width,this.image.height,0,0,this.$canvas.width,this.$canvas.height);
     
     //setup the text for drawing
+    
     let fontSize=((this.$canvas.width+this.$canvas.height)/2)*4/100;
     this.$context.font=`${fontSize}pt sans-serif`;
     this.$context.textAlign='center';
@@ -58,12 +62,12 @@ class Memes
     //draw the text
     const topText=this.$topTextInput.value.toUpperCase();
     const botText=this.$bottomTextInput.value.toUpperCase();
-    this.$context.strokeText(botText,this.$canvas.width/2,this.$canvas.height*(5/100));
+    this.$context.strokeText(topText,this.$canvas.width/2,this.$canvas.height*(5/100));
     this.$context.fillText(topText,this.$canvas.width/2,this.$canvas.height*(5/100));
-
+    
     this.$context.strokeText(botText,this.$canvas.width/2,this.$canvas.height*(90/100));
     this.$context.fillText(botText,this.$canvas.width/2,this.$canvas.height*(90/100));
-    console.log('createMeme');
+    
     /*
     - Write the method createMeme.  It should
     - clear the previous image from the page
@@ -101,13 +105,17 @@ class Memes
       and then use the arrayName.forEach method and an arrow function
       Add a call to this method in the constructor
     */
-    //let inputNodes=[this.$topTextInput,this.$bottomTextInput,this.$imageInput];
+    //these break my clearRect for some reason but may be useful in the future
+    //let inputNodes=[this.$topTextInput,this.$bottomTextInput]; use array of elements to bind event listeners
     //inputNodes.forEach(element=>element.addEventListener('keyup',this.createMeme));
-   //inputNodes.forEach(element=>element.addEventListener('change',this.createMeme));
-    this.$topTextInput.addEventListener('keyup',this.createMeme);
-    this.$bottomTextInput.addEventListener('keyup',this.createMeme);
+    //inputNodes.forEach(element=>element.addEventListener('change',this.createMeme));
+    this.$topTextInput.addEventListener('keyup',this.createMeme.bind(this));
+    this.$bottomTextInput.addEventListener('keyup',this.createMeme.bind(this));
+    this.$topTextInput.addEventListener('change',this.createMeme.bind(this));
+    this.$bottomTextInput.addEventListener('change',this.createMeme.bind(this));
     //this.$downloadButton.addEventListener('click',this.$downloadButton.setAttributeNode(att));
-    this.$imageInput.addEventListener('change',this.loadImage);   
+    this.$imageInput.addEventListener('change',this.loadImage.bind(this));   
+    this.$downloadButton.addEventListener('click',this.downloadMeme.bind(this));
   }
   downloadMeme()
   {
@@ -119,8 +127,9 @@ class Memes
     - bind the class to the downloadMeme method
     - add an event handler to the click event for the download button
     */
+   console.log('downloadMeme');
 
-    //validates before donwload. return stops execution of the method
+    /*/validates before donwload. return stops execution of the method
     if(!this.$imageInput.files[0])
     {
       this.$imageInput.parentElement.classList.add('has-error');
@@ -132,16 +141,18 @@ class Memes
       this.$bottomTextInput.parentElement.classList.add('has-error');
       return;
     }
-    this.$imageInput.parentElement.classList.remove('has-error');
-    this.$bottomTextInput.parentElement.classList.remove('has-error');
-    
+    */
+    //this.$imageInput.parentElement.classList.remove('has-error');
+    //this.$bottomTextInput.parentElement.classList.remove('has-error');
+    console.log('after if statement download meme');
    //the canvas is change into a url put into variable, then put that into att, which
    //does some magic and tricks the browser into downloading instead of viewing the file.
    const imageSource=this.$canvas.toDataURL('image/png');
-   let att=document.createAttribute('href');
-   att.value=imageSource.replace(/^data:image\/{^;}/,'data:application/octec-stream');
-   this.$downloadButton.setAttribute(att);
-   this.$downloadButton.addEventListener('click',this.$downloadButton.setAttributeNode(att));
+   this.$downloadButton.setAttribute('href',imageSource);
+   //let att=document.createAttribute('href');
+   //att.value=imageSource.replace(/^data:image\/{^;}/,'data:application/octec-stream');
+   //this.$downloadButton.setAttribute(att);
+   //this.$downloadButton.addEventListener('click',this.$downloadButton.setAttributeNode(att));
 
    
   }
@@ -163,16 +174,17 @@ class Memes
     - bind the class to the loadImage method
     - add an event handler to the change event for the file input element on the page
     */
-      if(this.$imageInput.files && this.$imageInputfiles[0])
+      if(this.$imageInput.files && this.$imageInput.files[0])
       {
         let reader=new FileReader();
         reader.onload=()=>
         {
-          //let image = new Image();
+          //call back function when reader is done do this.
+          this.image=new Image();
           this.image.onload=()=>
           {
-              this.$canvas.height=image.height;
-              this.$canvas.width=image.width;
+              //this.$canvas.height=image.height;
+              //this.$canvas.width=image.width;
               this.createMeme();
           };
           this.image.src=reader.result;
@@ -191,6 +203,7 @@ class Memes
       height/=2;
       width/=2;
     }
+      
       this.$canvas.style.height = `${height}px`;
       this.$canvas.style.width = `${width}px`;
     
